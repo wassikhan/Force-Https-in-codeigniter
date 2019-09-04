@@ -1,0 +1,31 @@
+First enable 'enable_hooks' in application/config/config.php.
+
+$config['enable_hooks'] = TRUE;
+
+Create new File in config Folder hooks.php
+
+$hook['post_controller_constructor'][] = array(
+    'function' => 'redirect_ssl',
+    'filename' => 'ssl.php',
+    'filepath' => 'hooks'
+);
+
+Now create a new directory named hooks inside the application folder (i.e. application/hooks) and then create a new file named ssl.php inside the hooks folder (i.e. application/hooks/ssl.php).
+
+Add the following code in the ssl.php file:
+
+
+function redirect_ssl() {
+    $CI =& get_instance();
+    $class = $CI->router->fetch_class();
+    $exclude =  array('client');  // add more controller name to exclude ssl.
+    if(!in_array($class,$exclude)) {
+        // redirecting to ssl.
+        $CI->config->config['base_url'] = str_replace('http://', 'https://', $CI->config->config['base_url']);
+        if ($_SERVER['SERVER_PORT'] != 443) redirect($CI->uri->uri_string());
+    } else {
+        // redirecting with no ssl.
+        $CI->config->config['base_url'] = str_replace('https://', 'http://', $CI->config->config['base_url']);
+        if ($_SERVER['SERVER_PORT'] == 443) redirect($CI->uri->uri_string());
+    }
+}
